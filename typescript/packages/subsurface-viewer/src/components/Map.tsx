@@ -494,7 +494,10 @@ const Map: React.FC<MapProps> = ({
     );
 
     const [applyViewController, forceUpdate] = React.useReducer(
-        (x) => x + 1,
+        (x) => {
+            console.log("Force update called");
+            return x + 1
+        },
         0
     );
     const viewController = useMemo(() => new ViewController(forceUpdate), []);
@@ -914,8 +917,36 @@ const Map: React.FC<MapProps> = ({
         return null;
     }
 
+    const takeScreenshot = () => {
+        if (deckRef.current && deckRef.current.deck) {
+            const deck = deckRef.current.deck;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const canvas = (deck as any).canvas as HTMLCanvasElement | null;
+            if (canvas) {
+                const dataUrl = canvas.toDataURL("image/png");
+                const link = document.createElement("a");
+                link.download = "subsurface_viewer_snapshot.png";
+                link.href = dataUrl;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+        }
+    };
+
     return (
         <div ref={divRef} onContextMenu={(event) => event.preventDefault()}>
+            <div
+                style={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    zIndex: 10,
+                }}
+            >
+                <button onClick={forceUpdate} > Force Rerender</button>
+                <button onClick={takeScreenshot}> Take Screenshot</button>
+            </div>
             <DeckGL
                 id={id}
                 viewState={deckGlViewState}
